@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>تذكرتك - المتحف المصري</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f1ea; text-align: center; padding: 40px; }
+        .ticket { background: white; border: 2px solid #d4af37; padding: 25px; max-width: 400px; margin: 0 auto; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .serial { color: #d4af37; font-weight: bold; font-size: 1.2rem; }
+        .badge { background: #eee; padding: 5px 10px; border-radius: 5px; font-size: 0.9rem; margin-top: 10px; display: inline-block; }
+        button { background: #1a1a1a; color: #d4af37; padding: 10px 20px; border: none; cursor: pointer; margin-top: 20px; border-radius: 5px; }
+        @media print { button { display: none; } }
+    </style>
+</head>
+<body>
+    <div class="ticket">
+        <h3>🏛️ تذكرة دخول المتحف المصري</h3>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ serial }}" alt="QR Code">
+        <div style="text-align: right; margin-top: 20px;">
+            <p><strong>الاسم:</strong> {{ name }}</p>
+            <p><strong>التاريخ:</strong> {{ date }}</p>
+            <p><strong>المبلغ:</strong> {{ total }} ج.م</p>
+            <p><strong>رقم التذكرة:</strong> <span class="serial">{{ serial }}</span></p>
+        </div>
+        <div class="badge">{{ status }}</div>
+    </div>
+    <button onclick="window.print()">🖨️ طباعة التذكرة</button>
+    <br><a href="/">العودة للرئيسية</a>
+</body>
+</html>
