@@ -83,34 +83,38 @@ async def handle_booking(
     count: int = Form(...),
     payment_method: str = Form(...)
 ):
-    # حساب السعر
+    # 1. حساب السعر والبيانات
     prices = {"egyptian": 60, "foreign": 200, "student": 30}
     price_per_ticket = prices.get(ticket_type, 0)
     total_amount = price_per_ticket * count
     
-    # بيانات إضافية
     serial_number = f"GEM-{random.randint(10000, 99999)}"
     status = "مؤكد (الدفع كاش)" if payment_method == "عند الوصول" else "قيد المراجعة"
     ticket_label = "مصري" if ticket_type == "egyptian" else "أجنبي" if ticket_type == "foreign" else "طالب"
 
-    # حفظ في ملف CSV
-    file_exists = os.path.exists("bookings.csv")
-    with open("bookings.csv", mode="a", newline="", encoding="utf-8-sig") as file:
-        fieldnames = ["الرقم التسلسلي", "الاسم", "التاريخ", "النوع", "العدد", "الإجمالي", "طريقة الدفع", "الحالة"]
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        if not file_exists:
-            writer.writeheader()
-        writer.writerow({
-            "الرقم التسلسلي": serial_number,
-            "الاسم": name,
-            "التاريخ": date,
-            "النوع": ticket_label,
-            "العدد": count,
-            "الإجمالي": total_amount,
-            "طريقة الدفع": payment_method,
-            "الحالة": status
-        })
+    # 2. محاولة الحفظ في ملف CSV (مع تجاهل الخطأ لو السيرفر منع الكتابة)
+    try:
+        file_exists = os.path.exists("bookings.csv")
+        with open("bookings.csv", mode="a", newline="", encoding="utf-8-sig") as file:
+            fieldnames = ["الرقم التسلسلي", "الاسم", "التاريخ", "النوع", "العدد", "الإجمالي", "طريقة الدفع", "الحالة"]
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            if not file_exists:
+                writer.writeheader()
+            writer.writerow({
+                "الرقم التسلسلي": serial_number,
+                "الاسم": name,
+                "التاريخ": date,
+                "النوع": ticket_label,
+                "العدد": count,
+                "الإجمالي": total_amount,
+                "طريقة الدفع": payment_method,
+                "الحالة": status
+            })
+    except Exception as e:
+        # هنا بنقول للسيرفر: لو مقدرتش تكتب في الملف، اطبع الخطأ في الـ Logs وكمل عادي
+        print(f"فشل الحفظ في الملف: {e}")
 
+    # 3. العودة لصفحة النجاح (ستعمل حتى لو لم يتم الحفظ)
     return templates.TemplateResponse(
         request=request, 
         name="success.html", 
@@ -119,5 +123,3 @@ async def handle_booking(
             "count": count, "serial": serial_number, "status": status
         }
     )
-
-
